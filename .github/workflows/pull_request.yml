@@ -48,8 +48,24 @@ jobs:
             -Dsonar.sources=src
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
 
+  snyk:
+    name: Analisis de dependencias con Snyk
+    runs-on: ubuntu-latest
+    needs: validaciones
+
+    steps:
+      - name: Descargar codigo del repositorio
+        uses: actions/checkout@v4
+
+      - name: Ejecutar Snyk para detectar vulnerabilidades criticas
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=critical
+
   docker:
-    name: Construir y publicar imagen Docker
+    name: Construir, publicar y escanear imagen Docker
     runs-on: ubuntu-latest
     needs: validaciones
 
@@ -69,3 +85,11 @@ jobs:
           context: .
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/auy1102-pipeline:latest
+
+      - name: Analizar vulnerabilidades de la imagen con Docker Scout
+        uses: docker/scout-action@v1
+        with:
+          command: cves
+          image: ${{ secrets.DOCKERHUB_USERNAME }}/auy1102-pipeline:latest
+          only-severities: critical,high
+          exit-code: true
