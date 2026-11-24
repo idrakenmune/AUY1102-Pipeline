@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Descargar codigo del repositorio
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Configurar Node.js
         uses: actions/setup-node@v4
@@ -29,11 +31,22 @@ jobs:
       - name: Revisar calidad del codigo
         run: npm run lint
 
-      - name: Ejecutar pruebas unitarias
-        run: npm run test:unit
+      - name: Ejecutar pruebas unitarias con cobertura
+        run: npm run test:coverage
 
       - name: Validar compilacion
         run: npm run build
+
+      - name: Analisis de calidad con SonarCloud
+        uses: SonarSource/sonarqube-scan-action@59202af334b4ba7b5db01b701b8e79f8b3bef0f4
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=idrakenmune
+            -Dsonar.projectKey=idrakenmune_AUY1102-Pipeline
+            -Dsonar.sources=src
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
 
   docker:
     name: Construir y publicar imagen Docker
