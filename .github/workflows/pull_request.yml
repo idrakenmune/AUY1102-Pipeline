@@ -35,8 +35,7 @@ jobs:
       - name: Validar compilacion
         run: npm run build
 
-
-docker:
+  docker:
     name: Construir y publicar imagen Docker
     runs-on: ubuntu-latest
     needs: validaciones
