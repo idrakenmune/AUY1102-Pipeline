@@ -1,41 +1,36 @@
-name: Typescript for Pull Requests
+name: Integracion Continua
 
 on:
+  push:
+    branches:
+      - develop
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
-  lint:
+  validaciones:
+    name: Validar proyecto
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: Descargar codigo del repositorio
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '14'
+          node-version: '20'
+          cache: 'npm'
 
-      - name: Install dependencies
-        run: npm install
+      - name: Instalar dependencias
+        run: npm ci
 
-      - name: Lint TypeScript
+      - name: Revisar calidad del codigo
         run: npm run lint
-  
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Unit Test TypeScript
+      - name: Ejecutar pruebas unitarias
         run: npm run test:unit
+
+      - name: Validar compilacion
+        run: npm run build
